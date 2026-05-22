@@ -2,9 +2,18 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-
-class TipoUsuario extends Model
+class TipoUsuario extends BaseModel
 {
-    //
+    protected $table = 'tipousuarios';
+
+    protected $fillable = [
+        'nombre',
+        'permisos',
+        'activo',
+        'eliminado'
+    ];
+
+    protected $casts = [
+        'permisos' => 'array'
+    ];
 }

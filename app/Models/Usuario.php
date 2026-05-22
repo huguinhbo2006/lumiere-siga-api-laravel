@@ -2,9 +2,7 @@
 
 namespace App\Models;
 
-use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
-
-class Usuario extends BaseAuthenticatable implements JWTSubject
+class Usuario extends BaseAuthenticatable
 {
     protected $table = 'usuarios';
 
@@ -13,64 +11,47 @@ class Usuario extends BaseAuthenticatable implements JWTSubject
         'password',
         'idEmpleado',
         'idTipoUsuario',
+        'permisos',
         'foto',
         'activo',
-        'eliminado',
-        'created_at',
-        'updated_at'
+        'eliminado'
     ];
 
     protected $hidden = [
         'password'
     ];
 
+    protected $casts = [
+        'permisos' => 'array'
+    ];
+
     protected $appends = [
         'tipoUsuario',
-        'empleado'
+        'permisosFinales'
     ];
-
-    protected $casts = [
-        'id' => 'integer',
-        'idEmpleado' => 'integer',
-        'idTipoUsuario' => 'integer',
-        'activo' => 'boolean',
-        'eliminado' => 'boolean'
-    ];
-
-    public function getJWTIdentifier()
-    {
-        return $this->getKey();
-    }
-
-    public function getJWTCustomClaims()
-    {
-        return [];
-    }
 
     public function getTipoUsuarioAttribute()
     {
-        if (!$this->idTipoUsuario) {
-            return null;
-        }
-
-        $tipoUsuario = TipoUsuario::find($this->idTipoUsuario);
-
-        return $tipoUsuario ? $tipoUsuario->nombre : null;
+        return TipoUsuario::find($this->idTipoUsuario);
     }
 
-    public function getEmpleadoAttribute()
+    public function getPermisosFinalesAttribute()
     {
-        if (!$this->idEmpleado) {
-            return null;
+        if ($this->id == 1) {
+
+            return [
+                'superAdministrador' => true
+            ];
+
         }
 
-        $empleado = Empleado::find($this->idEmpleado);
+        $tipoPermisos = $this->tipoUsuario?->permisos ?? [];
 
-        return $empleado ? $empleado->nombre : null;
-    }
+        $usuarioPermisos = $this->permisos ?? [];
 
-    public function esSuperUsuario()
-    {
-        return $this->id === 1;
+        return array_merge_recursive(
+            $tipoPermisos,
+            $usuarioPermisos
+        );
     }
 }
